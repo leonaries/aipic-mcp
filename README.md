@@ -10,7 +10,7 @@ A Model Context Protocol (MCP) server that provides AI-powered image generation 
 ## 🚀 Quick Start
 
 ```bash
-npx aipic-mcp
+npx -y aipic-mcp
 ```
 
 ## ✨ Features
@@ -29,7 +29,7 @@ npx aipic-mcp
 Use directly with NPX without installation:
 
 ```bash
-npx aipic-mcp
+npx -y aipic-mcp
 ```
 
 **Claude Desktop Configuration:**
@@ -38,7 +38,7 @@ npx aipic-mcp
   "mcpServers": {
     "aipic": {
       "command": "npx",
-      "args": ["aipic-mcp"]
+      "args": ["-y", "aipic-mcp"]
     }
   }
 }
@@ -53,9 +53,25 @@ For convenience, you can configure your ModelScope API key as an environment var
   "mcpServers": {
     "aipic": {
       "command": "npx",
-      "args": ["aipic-mcp"],
+      "args": ["-y", "aipic-mcp"],
       "env": {
         "MODELSCOPE_API_KEY": "your-modelscope-api-key-here"
+      }
+    }
+  }
+}
+```
+
+**With full PATH (if using NVM or custom Node installation):**
+```json
+{
+  "mcpServers": {
+    "aipic": {
+      "command": "/Users/your-username/.nvm/versions/node/v20.19.4/bin/npx",
+      "args": ["-y", "aipic-mcp"],
+      "env": {
+        "MODELSCOPE_API_KEY": "your-modelscope-api-key-here",
+        "PATH": "/Users/your-username/.nvm/versions/node/v20.19.4/bin:/usr/local/bin:/usr/bin:/bin"
       }
     }
   }
@@ -265,7 +281,8 @@ Contributions are welcome! Please feel free to submit a Pull Request. For major 
 
 1. **"Command not found" error**
    - Make sure you have Node.js 18+ installed
-   - Try running `npx aipic-mcp` instead of global installation
+   - Try running `npx -y aipic-mcp` instead of global installation
+   - If using NVM, specify the full path to npx in your configuration
 
 2. **API key errors**
    - Verify your ModelScope API key is valid
@@ -281,6 +298,10 @@ Contributions are welcome! Please feel free to submit a Pull Request. For major 
    - Restart Claude Desktop after updating the configuration
    - Verify the JSON syntax in your configuration file
    - Check that the API key doesn't have extra spaces or quotes
+
+5. **NPX installation issues**
+   - Use the `-y` flag to automatically confirm installations
+   - If using NVM, make sure your PATH is correctly set in the configuration
 
 ## 📄 License
 

@@ -1,8 +1,19 @@
 # AI Picture MCP Server
 
+[![NPM Version](https://img.shields.io/npm/v/aipic-mcp)](https://www.npmjs.com/package/aipic-mcp)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![GitHub Stars](https://img.shields.io/github/stars/leonaries/aipic-mcp)](https://github.com/leonaries/aipic-mcp/stargazers)
+[![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg)](https://www.typescriptlang.org/)
+
 A Model Context Protocol (MCP) server that provides AI-powered image generation capabilities specifically designed for web design workflows. This server integrates with ModelScope's FLUX model to generate high-quality images based on English prompts, perfect for creating placeholder images, hero images, product mockups, and other web assets.
 
-## Features
+## 🚀 Quick Start
+
+```bash
+npx aipic-mcp
+```
+
+## ✨ Features
 
 - **AI Image Generation**: Generate images using ModelScope's FLUX model with natural language prompts
 - **Web-Optimized Output**: Automatically optimizes images for web use with proper compression and sizing  
@@ -11,7 +22,7 @@ A Model Context Protocol (MCP) server that provides AI-powered image generation 
 - **Error Handling**: Comprehensive error handling for API issues, network problems, and invalid inputs
 - **Security**: API keys are passed by the client, not hardcoded in the server
 
-## Installation & Usage
+## 📦 Installation & Usage
 
 ### Option 1: NPX (Recommended)
 
@@ -76,7 +87,7 @@ npm run build
 }
 ```
 
-## Configuration
+## ⚙️ Configuration
 
 ### Claude Desktop Setup
 
@@ -91,7 +102,7 @@ Choose one of the configuration options above based on your installation method.
 
 You'll need a ModelScope API key to use this server. Get one from [ModelScope](https://www.modelscope.cn/).
 
-## Usage
+## 🎯 Usage
 
 The server provides one main tool:
 
@@ -118,7 +129,7 @@ Generates an AI image optimized for web design use.
 Generate a hero image for my website with the prompt "A sleek modern smartphone floating above a city skyline at dusk" using my ModelScope API key "your-api-key-here"
 ```
 
-## API Integration Details
+## 🔧 API Integration Details
 
 This server uses the ModelScope Inference API with the following configuration:
 - **Model**: `MusePublic/489_ckpt_FLUX_1` (FLUX.1 model)
@@ -126,7 +137,7 @@ This server uses the ModelScope Inference API with the following configuration:
 - **Authentication**: Bearer token (your API key)
 - **Timeout**: 60 seconds for generation, 30 seconds for download
 
-## Error Handling
+## 🛡️ Error Handling
 
 The server handles various error conditions:
 - Invalid or missing API keys
@@ -135,7 +146,7 @@ The server handles various error conditions:
 - Invalid image URLs or download failures
 - File system errors when saving images
 
-## Development
+## 🔨 Development
 
 Run in development mode:
 ```bash
@@ -147,20 +158,24 @@ Build for production:
 npm run build
 ```
 
-## Security Considerations
+## 🔒 Security Considerations
 
 - API keys are passed as parameters by the client, never hardcoded
 - Images are saved to the local filesystem under the current working directory
 - Network requests have appropriate timeouts to prevent hanging
 - Input validation prevents empty prompts and missing required parameters
 
-## Dependencies
+## 📚 Dependencies
 
 - `@modelcontextprotocol/sdk`: MCP SDK for server implementation
 - `axios`: HTTP client for API requests
 - `sharp`: Image processing and optimization
 - `uuid`: Unique ID generation for filenames
 
-## License
+## 📄 License
 
 MIT License - see LICENSE file for details.
+
+---
+
+**🌟 Star this repository if you find it useful!**

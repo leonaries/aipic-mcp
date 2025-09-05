@@ -63,7 +63,14 @@ npm install -g aipic-mcp
 
 ### Option 3: Local Development
 
-1. Clone this repository
+If you want to contribute to the project or customize it:
+
+1. Clone this repository:
+```bash
+git clone https://github.com/leonaries/aipic-mcp.git
+cd aipic-mcp
+```
+
 2. Install dependencies:
 ```bash
 npm install
@@ -74,18 +81,25 @@ npm install
 npm run build
 ```
 
-**Claude Desktop Configuration:**
+4. Test locally:
+```bash
+npm run dev
+```
+
+**Claude Desktop Configuration for Local Development:**
 ```json
 {
   "mcpServers": {
     "aipic": {
       "command": "node",
       "args": ["dist/index.js"],
-      "cwd": "/path/to/your/aipic-mcp"
+      "cwd": "/Users/your-username/path/to/aipic-mcp"
     }
   }
 }
 ```
+
+> **Note**: Replace `/Users/your-username/path/to/aipic-mcp` with the actual path where you cloned the repository.
 
 ## ⚙️ Configuration
 
@@ -148,15 +162,42 @@ The server handles various error conditions:
 
 ## 🔨 Development
 
-Run in development mode:
+### Running in Development Mode
+
 ```bash
 npm run dev
 ```
 
-Build for production:
+### Building for Production
+
 ```bash
 npm run build
 ```
+
+### Testing
+
+```bash
+npm test
+```
+
+### Publishing to NPM
+
+The project is already published to NPM. For maintainers:
+
+```bash
+npm run build
+npm publish
+```
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
 ## 🔒 Security Considerations
 
@@ -172,9 +213,33 @@ npm run build
 - `sharp`: Image processing and optimization
 - `uuid`: Unique ID generation for filenames
 
+## 🐛 Troubleshooting
+
+### Common Issues
+
+1. **"Command not found" error**
+   - Make sure you have Node.js 18+ installed
+   - Try running `npx aipic-mcp` instead of global installation
+
+2. **API key errors**
+   - Verify your ModelScope API key is valid
+   - Check that you have sufficient quota on your ModelScope account
+
+3. **Image generation timeout**
+   - ModelScope API can be slow during peak hours
+   - Try again with a simpler prompt
+   - Check your internet connection
+
 ## 📄 License
 
-MIT License - see LICENSE file for details.
+MIT License - see [LICENSE](./LICENSE) file for details.
+
+## 🔗 Links
+
+- **NPM Package**: https://www.npmjs.com/package/aipic-mcp
+- **GitHub Repository**: https://github.com/leonaries/aipic-mcp
+- **ModelScope**: https://www.modelscope.cn/
+- **Model Context Protocol**: https://modelcontextprotocol.io/
 
 ---
 

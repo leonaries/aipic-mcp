@@ -1,0 +1,60 @@
+{
+  "name": "aipic-mcp",
+  "version": "1.0.0",
+  "description": "🎨 AI-powered image generation MCP server for web design. Generate high-quality images using ModelScope FLUX model with natural language prompts.",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "aipic-mcp": "dist/index.js"
+  },
+  "files": [
+    "dist/**/*",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/index.ts",
+    "start": "node dist/index.js",
+    "prepublishOnly": "npm run build",
+    "test": "node test-mcp-server.js",
+    "test:real": "node real-image-test.js"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "ai",
+    "image-generation",
+    "web-design",
+    "flux",
+    "modelscope",
+    "claude",
+    "assistant",
+    "tool"
+  ],
+  "author": "Leon <leon@example.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/aipic-mcp.git"
+  },
+  "homepage": "https://github.com/yourusername/aipic-mcp#readme",
+  "bugs": {
+    "url": "https://github.com/yourusername/aipic-mcp/issues"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "axios": "^1.6.0",
+    "sharp": "^0.33.0",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/uuid": "^9.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.0.0"
+  }
+}

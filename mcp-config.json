@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "aipic": {
+      "command": "node",
+      "args": ["dist/index.js"],
+      "cwd": "/Users/leon/Desktop/yideng/aipic-mcp"
+    }
+  }
+}

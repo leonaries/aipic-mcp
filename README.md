@@ -44,7 +44,25 @@ npx aipic-mcp
 }
 ```
 
-### Option 2: Global Installation
+### Option 2: NPX with API Key Environment Variable (Recommended)
+
+For convenience, you can configure your ModelScope API key as an environment variable:
+
+```json
+{
+  "mcpServers": {
+    "aipic": {
+      "command": "npx",
+      "args": ["aipic-mcp"],
+      "env": {
+        "MODELSCOPE_API_KEY": "your-modelscope-api-key-here"
+      }
+    }
+  }
+}
+```
+
+### Option 3: Global Installation
 
 ```bash
 npm install -g aipic-mcp
@@ -61,7 +79,21 @@ npm install -g aipic-mcp
 }
 ```
 
-### Option 3: Local Development
+**With API Key Environment Variable:**
+```json
+{
+  "mcpServers": {
+    "aipic": {
+      "command": "aipic-mcp",
+      "env": {
+        "MODELSCOPE_API_KEY": "your-modelscope-api-key-here"
+      }
+    }
+  }
+}
+```
+
+### Option 4: Local Development
 
 If you want to contribute to the project or customize it:
 
@@ -93,7 +125,10 @@ npm run dev
     "aipic": {
       "command": "node",
       "args": ["dist/index.js"],
-      "cwd": "/Users/your-username/path/to/aipic-mcp"
+      "cwd": "/Users/your-username/path/to/aipic-mcp",
+      "env": {
+        "MODELSCOPE_API_KEY": "your-modelscope-api-key-here"
+      }
     }
   }
 }
@@ -116,6 +151,11 @@ Choose one of the configuration options above based on your installation method.
 
 You'll need a ModelScope API key to use this server. Get one from [ModelScope](https://www.modelscope.cn/).
 
+**Two ways to provide your API key:**
+
+1. **Environment Variable (Recommended)**: Configure in Claude Desktop config as shown above
+2. **Runtime Parameter**: Pass the API key when calling the tool (less convenient but more flexible)
+
 ## 🎯 Usage
 
 The server provides one main tool:
@@ -126,7 +166,7 @@ Generates an AI image optimized for web design use.
 
 **Parameters:**
 - `prompt` (required): English description of the image to generate
-- `apiKey` (required): Your ModelScope API key
+- `apiKey` (optional): Your ModelScope API key (if not set via environment variable)
 - `width` (optional): Image width in pixels (default: 1024)
 - `height` (optional): Image height in pixels (default: 1024)  
 - `outputPath` (optional): Path where to save the image file
@@ -138,7 +178,12 @@ Generates an AI image optimized for web design use.
 - "E-commerce product photo of wireless headphones on white background"
 - "Hero image of a mountain landscape at sunrise"
 
-**Example usage in Claude:**
+**Example usage in Claude (with environment variable configured):**
+```
+Generate a hero image for my website with the prompt "A sleek modern smartphone floating above a city skyline at dusk"
+```
+
+**Example usage in Claude (with manual API key):**
 ```
 Generate a hero image for my website with the prompt "A sleek modern smartphone floating above a city skyline at dusk" using my ModelScope API key "your-api-key-here"
 ```
@@ -201,10 +246,11 @@ Contributions are welcome! Please feel free to submit a Pull Request. For major 
 
 ## 🔒 Security Considerations
 
-- API keys are passed as parameters by the client, never hardcoded
+- API keys can be configured via environment variables for better security
 - Images are saved to the local filesystem under the current working directory
 - Network requests have appropriate timeouts to prevent hanging
 - Input validation prevents empty prompts and missing required parameters
+- Environment variables are more secure than hardcoded keys
 
 ## 📚 Dependencies
 
@@ -224,11 +270,17 @@ Contributions are welcome! Please feel free to submit a Pull Request. For major 
 2. **API key errors**
    - Verify your ModelScope API key is valid
    - Check that you have sufficient quota on your ModelScope account
+   - Ensure the API key is correctly configured in environment variables or passed as parameter
 
 3. **Image generation timeout**
    - ModelScope API can be slow during peak hours
    - Try again with a simpler prompt
    - Check your internet connection
+
+4. **Environment variable not working**
+   - Restart Claude Desktop after updating the configuration
+   - Verify the JSON syntax in your configuration file
+   - Check that the API key doesn't have extra spaces or quotes
 
 ## 📄 License
 

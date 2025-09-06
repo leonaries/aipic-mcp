@@ -1,6 +1,6 @@
 {
   "name": "aipic-mcp",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "🎨 AI-powered image generation MCP server for web design. Generate high-quality images using DashScope FLUX model with natural language prompts.",
   "type": "module",
   "main": "dist/index.js",

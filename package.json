@@ -1,7 +1,7 @@
 {
   "name": "aipic-mcp",
-  "version": "1.0.2",
-  "description": "🎨 AI-powered image generation MCP server for web design. Generate high-quality images using ModelScope/DashScope FLUX model with natural language prompts.",
+  "version": "1.0.3",
+  "description": "🎨 AI-powered image generation MCP server for web design. Generate high-quality images using DashScope FLUX model with natural language prompts.",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
@@ -27,7 +27,6 @@
     "image-generation",
     "web-design",
     "flux",
-    "modelscope",
     "dashscope",
     "alibaba-cloud",
     "claude",

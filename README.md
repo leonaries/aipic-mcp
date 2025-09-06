@@ -334,7 +334,13 @@ MIT License - see [LICENSE](./LICENSE) file for details.
 
 ## 📝 Changelog
 
-### v1.0.3 (Latest)
+### v1.0.4 (Latest)
+- 📝 **Documentation Update**: Comprehensive README improvements with enhanced feature descriptions
+- 🔧 **API Key Format**: Updated all examples to use correct `sk-` prefix for DashScope API keys
+- 🌐 **Environment Variables**: Clarified primary use of `DASHSCOPE_API_KEY` over legacy `MODELSCOPE_API_KEY`
+- ✨ **User Experience**: Improved installation guides and troubleshooting documentation
+
+### v1.0.3
 - ⚡ **Smart File Saving**: Auto-saves images to Desktop when possible, falls back to temp directory
 - 🔧 **Enhanced Environment Variables**: Primary support for `DASHSCOPE_API_KEY`, backward compatible with `MODELSCOPE_API_KEY`
 - 🛡️ **Improved Error Handling**: Better error messages and more robust API integration

@@ -13,7 +13,7 @@ class AIPicMCPServer {
     constructor() {
         this.server = new Server({
             name: 'aipic-mcp-server',
-            version: '1.0.0',
+            version: '1.0.3',
         }, {
             capabilities: {
                 tools: {},
@@ -27,7 +27,7 @@ class AIPicMCPServer {
             tools: [
                 {
                     name: 'generate_web_image',
-                    description: 'Generate AI images for web design using ModelScope FLUX model. Perfect for creating placeholder images, hero images, product images, and other web assets.',
+                    description: 'Generate AI images for web design using FLUX model via DashScope API. Perfect for creating placeholder images, hero images, product images, and other web assets.',
                     inputSchema: {
                         type: 'object',
                         properties: {
@@ -51,10 +51,10 @@ class AIPicMCPServer {
                             },
                             apiKey: {
                                 type: 'string',
-                                description: 'ModelScope API key for authentication',
+                                description: 'DashScope API key for authentication (can also be set via DASHSCOPE_API_KEY environment variable)',
                             },
                         },
-                        required: ['prompt', 'apiKey'],
+                        required: ['prompt'],
                     },
                 },
             ],
@@ -73,11 +73,13 @@ class AIPicMCPServer {
             if (!prompt || prompt.trim().length === 0) {
                 throw new Error('Prompt is required and cannot be empty');
             }
-            if (!apiKey || apiKey.trim().length === 0) {
-                throw new Error('API key is required');
+            // Get API key from parameter or environment variables (prefer DASHSCOPE_API_KEY, fallback to MODELSCOPE_API_KEY for compatibility)
+            const effectiveApiKey = apiKey || process.env.DASHSCOPE_API_KEY || process.env.MODELSCOPE_API_KEY;
+            if (!effectiveApiKey || effectiveApiKey.trim().length === 0) {
+                throw new Error('API key is required. Please provide it as a parameter or set DASHSCOPE_API_KEY environment variable.');
             }
-            // Generate image using ModelScope API
-            const imageUrl = await this.generateImageWithModelScope(prompt, apiKey);
+            // Generate image using DashScope API
+            const imageUrl = await this.generateImageWithDashScope(prompt, effectiveApiKey, width, height);
             // Download and process the image
             const imageBuffer = await this.downloadImage(imageUrl);
             // Resize image if needed
@@ -88,20 +90,42 @@ class AIPicMCPServer {
                     .jpeg({ quality: 90 })
                     .toBuffer();
             }
-            // Save image
-            const filename = outputPath || `web_image_${uuidv4().slice(0, 8)}.jpg`;
-            const fullPath = join(process.cwd(), filename);
+            // Save image with a more reliable path strategy
+            let finalPath;
+            if (outputPath) {
+                finalPath = outputPath;
+            }
+            else {
+                // Try to save to user's Desktop, fallback to temp directory
+                const filename = `web_image_${uuidv4().slice(0, 8)}.jpg`;
+                const possiblePaths = [
+                    `/Users/${process.env.USER || 'user'}/Desktop/${filename}`,
+                    `/tmp/${filename}`,
+                    join(process.cwd(), filename)
+                ];
+                finalPath = possiblePaths[0]; // Default to Desktop
+                // Check if we can write to Desktop, otherwise use temp
+                try {
+                    const dir = dirname(finalPath);
+                    if (!existsSync(dir)) {
+                        finalPath = possiblePaths[1]; // Use /tmp
+                    }
+                }
+                catch {
+                    finalPath = possiblePaths[1]; // Use /tmp
+                }
+            }
             // Ensure directory exists
-            const dir = dirname(fullPath);
+            const dir = dirname(finalPath);
             if (!existsSync(dir)) {
                 await mkdir(dir, { recursive: true });
             }
-            await writeFile(fullPath, processedImage);
+            await writeFile(finalPath, processedImage);
             return {
                 content: [
                     {
                         type: 'text',
-                        text: `Successfully generated web design image!\n\nPrompt: ${prompt}\nDimensions: ${width}x${height}px\nSaved to: ${fullPath}\n\nThe image has been optimized for web use and saved as a high-quality JPEG.`
+                        text: `Successfully generated web design image!\n\nPrompt: ${prompt}\nDimensions: ${width}x${height}px\nSaved to: ${finalPath}\n\nThe image has been optimized for web use and saved as a high-quality JPEG.`
                     },
                     {
                         type: 'image',
@@ -124,43 +148,100 @@ class AIPicMCPServer {
             };
         }
     }
-    async generateImageWithModelScope(prompt, apiKey) {
-        const url = 'https://api-inference.modelscope.cn/v1/images/generations';
+    async generateImageWithDashScope(prompt, apiKey, width, height) {
+        const url = 'https://dashscope.aliyuncs.com/api/v1/services/aigc/text2image/image-synthesis';
+        // Format size as required by DashScope API
+        const size = `${width}*${height}`;
         const payload = {
-            model: 'MusePublic/489_ckpt_FLUX_1',
-            prompt: prompt
+            model: 'flux-schnell', // Using the faster FLUX model
+            input: {
+                prompt: prompt
+            },
+            parameters: {
+                size: size,
+                seed: Math.floor(Math.random() * 1000000),
+                steps: 4 // FLUX schnell typically uses 4 steps
+            }
         };
         const headers = {
             'Authorization': `Bearer ${apiKey}`,
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'X-DashScope-Async': 'enable' // Enable async mode for image generation
         };
         try {
+            console.error('Generating image with DashScope API...');
+            // Submit the task
             const response = await axios.post(url, payload, {
                 headers,
-                timeout: 60000 // 60 seconds timeout
+                timeout: 10000 // 10 seconds timeout for task submission
             });
-            if (!response.data?.images?.[0]?.url) {
-                throw new Error('Invalid response from ModelScope API - no image URL found');
+            if (!response.data?.output?.task_id) {
+                throw new Error('Failed to submit image generation task - no task ID received');
             }
-            return response.data.images[0].url;
+            const taskId = response.data.output.task_id;
+            console.error(`Image generation task submitted: ${taskId}`);
+            // Poll for task completion
+            const imageUrl = await this.pollTaskCompletion(taskId, apiKey);
+            return imageUrl;
         }
         catch (error) {
             if (axios.isAxiosError(error)) {
                 if (error.response?.status === 401) {
-                    throw new Error('Invalid API key. Please check your ModelScope API key.');
+                    throw new Error('Invalid API key. Please check your DashScope API key format and permissions.');
                 }
                 else if (error.response?.status === 429) {
                     throw new Error('Rate limit exceeded. Please try again later.');
                 }
                 else if (error.code === 'ECONNABORTED') {
-                    throw new Error('Request timeout. The image generation took too long.');
+                    throw new Error('Request timeout. Please try again.');
                 }
                 else {
-                    throw new Error(`ModelScope API error: ${error.response?.data?.message || error.message}`);
+                    const errorData = error.response?.data;
+                    if (errorData?.code && errorData?.message) {
+                        throw new Error(`DashScope API error: ${errorData.message} (Code: ${errorData.code})`);
+                    }
+                    throw new Error(`DashScope API error: ${error.response?.statusText || error.message}`);
                 }
             }
             throw error;
         }
+    }
+    async pollTaskCompletion(taskId, apiKey) {
+        const maxAttempts = 30; // Max 5 minutes (10 seconds * 30)
+        const pollInterval = 10000; // 10 seconds
+        for (let attempt = 0; attempt < maxAttempts; attempt++) {
+            try {
+                const response = await axios.get(`https://dashscope.aliyuncs.com/api/v1/tasks/${taskId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${apiKey}`,
+                    },
+                    timeout: 10000
+                });
+                const { task_status, results, message } = response.data.output;
+                if (task_status === 'SUCCEEDED' && results && results.length > 0) {
+                    console.error(`Image generation completed successfully`);
+                    return results[0].url;
+                }
+                else if (task_status === 'FAILED') {
+                    throw new Error(`Image generation failed: ${message || 'Unknown error'}`);
+                }
+                else if (task_status === 'PENDING' || task_status === 'RUNNING') {
+                    console.error(`Task ${taskId} is ${task_status.toLowerCase()}, waiting...`);
+                    await new Promise(resolve => setTimeout(resolve, pollInterval));
+                    continue;
+                }
+                else {
+                    throw new Error(`Unknown task status: ${task_status}`);
+                }
+            }
+            catch (error) {
+                if (axios.isAxiosError(error)) {
+                    throw new Error(`Failed to check task status: ${error.message}`);
+                }
+                throw error;
+            }
+        }
+        throw new Error('Image generation timeout. The task took too long to complete.');
     }
     async downloadImage(imageUrl) {
         try {
@@ -189,7 +270,7 @@ class AIPicMCPServer {
     async run() {
         const transport = new StdioServerTransport();
         await this.server.connect(transport);
-        console.error('AI Picture MCP Server running on stdio');
+        console.error('AI Picture MCP Server v1.0.3 running on stdio (DashScope API)');
     }
 }
 const server = new AIPicMCPServer();

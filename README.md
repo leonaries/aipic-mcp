@@ -15,13 +15,14 @@ npx -y aipic-mcp
 
 ## ✨ Features
 
-- **AI Image Generation**: Generate images using Alibaba Cloud DashScope's FLUX model with natural language prompts
-- **Web-Optimized Output**: Automatically optimizes images for web use with proper compression and sizing  
-- **Flexible Sizing**: Support for custom width and height specifications
-- **Base64 Encoding**: Returns images in base64 format for direct use in web applications
-- **Async Processing**: Uses DashScope's async API for reliable image generation
-- **Error Handling**: Comprehensive error handling for API issues, network problems, and invalid inputs
-- **Security**: API keys can be configured via environment variables
+- **🎨 AI Image Generation**: Generate high-quality images using DashScope FLUX model with natural language prompts
+- **🖥️ Web-Optimized Output**: Automatically optimizes images for web use with proper compression and sizing  
+- **📏 Flexible Sizing**: Support for custom width and height specifications (default: 1024x1024)
+- **📋 Base64 Encoding**: Returns images in base64 format for direct use in web applications
+- **⚡ Smart File Saving**: Auto-saves to Desktop when possible, falls back to temp directory
+- **🔄 Async Processing**: Uses DashScope's async task API for reliable image generation
+- **🛡️ Robust Error Handling**: Comprehensive error handling for API issues, network problems, and invalid inputs
+- **🔐 Environment Variable Support**: Configure API keys via `DASHSCOPE_API_KEY` or `MODELSCOPE_API_KEY`
 
 ## 📦 Installation & Usage
 
@@ -47,7 +48,7 @@ npx -y aipic-mcp
 
 ### Option 2: NPX with API Key Environment Variable (Recommended)
 
-For convenience, you can configure your DashScope API key as an environment variable:
+For the best experience, configure your DashScope API key as an environment variable:
 
 ```json
 {
@@ -56,7 +57,7 @@ For convenience, you can configure your DashScope API key as an environment vari
       "command": "npx",
       "args": ["-y", "aipic-mcp"],
       "env": {
-        "MODELSCOPE_API_KEY": "your-dashscope-api-key-here"
+        "DASHSCOPE_API_KEY": "sk-your-dashscope-api-key-here"
       }
     }
   }
@@ -71,7 +72,7 @@ For convenience, you can configure your DashScope API key as an environment vari
       "command": "/Users/your-username/.nvm/versions/node/v20.19.4/bin/npx",
       "args": ["-y", "aipic-mcp"],
       "env": {
-        "MODELSCOPE_API_KEY": "your-dashscope-api-key-here",
+        "DASHSCOPE_API_KEY": "sk-your-dashscope-api-key-here",
         "PATH": "/Users/your-username/.nvm/versions/node/v20.19.4/bin:/usr/local/bin:/usr/bin:/bin"
       }
     }
@@ -103,7 +104,7 @@ npm install -g aipic-mcp
     "aipic": {
       "command": "aipic-mcp",
       "env": {
-        "MODELSCOPE_API_KEY": "your-dashscope-api-key-here"
+        "DASHSCOPE_API_KEY": "sk-your-dashscope-api-key-here"
       }
     }
   }
@@ -144,7 +145,7 @@ npm run dev
       "args": ["dist/index.js"],
       "cwd": "/Users/your-username/path/to/aipic-mcp",
       "env": {
-        "MODELSCOPE_API_KEY": "your-dashscope-api-key-here"
+        "DASHSCOPE_API_KEY": "sk-your-dashscope-api-key-here"
       }
     }
   }
@@ -173,7 +174,7 @@ You'll need a **DashScope API key** from Alibaba Cloud to use this server. Get o
 2. Sign up/login to your account
 3. Go to API Keys section
 4. Create a new API key with image generation permissions
-5. Copy the API key (format: `ms-xxxxxxxxxx`)
+5. Copy the API key (format: `sk-xxxxxxxxxx`)
 
 **Two ways to provide your API key:**
 
@@ -190,10 +191,10 @@ Generates an AI image optimized for web design use.
 
 **Parameters:**
 - `prompt` (required): English description of the image to generate
-- `apiKey` (optional): Your DashScope API key (if not set via environment variable)
+- `apiKey` (optional): Your DashScope API key (if not set via `DASHSCOPE_API_KEY` environment variable)
 - `width` (optional): Image width in pixels (default: 1024)
 - `height` (optional): Image height in pixels (default: 1024)  
-- `outputPath` (optional): Path where to save the image file
+- `outputPath` (optional): Custom path to save the image (default: auto-saves to Desktop or temp directory)
 
 **Example prompts:**
 - "A modern minimalist office workspace with laptop and coffee cup"
@@ -209,7 +210,7 @@ Generate a hero image for my website with the prompt "A sleek modern smartphone 
 
 **Example usage in Claude (with manual API key):**
 ```
-Generate a hero image for my website with the prompt "A sleek modern smartphone floating above a city skyline at dusk" using my DashScope API key "ms-your-api-key-here"
+Generate a hero image for my website with the prompt "A sleek modern smartphone floating above a city skyline at dusk" using my DashScope API key "sk-your-api-key-here"
 ```
 
 ## 🔧 API Integration Details
@@ -296,9 +297,9 @@ Contributions are welcome! Please feel free to submit a Pull Request. For major 
    - If using NVM, specify the full path to npx in your configuration
 
 2. **API key errors**
-   - Verify your DashScope API key is valid (should start with `ms-`)
+   - Verify your DashScope API key is valid (should start with `sk-`)
    - Check that you have sufficient quota on your Alibaba Cloud account
-   - Ensure the API key is correctly configured in environment variables or passed as parameter
+   - Ensure the API key is correctly configured as `DASHSCOPE_API_KEY` environment variable
    - Make sure your API key has image generation permissions
 
 3. **Image generation timeout**
@@ -332,6 +333,13 @@ MIT License - see [LICENSE](./LICENSE) file for details.
 - **Model Context Protocol**: https://modelcontextprotocol.io/
 
 ## 📝 Changelog
+
+### v1.0.3 (Latest)
+- ⚡ **Smart File Saving**: Auto-saves images to Desktop when possible, falls back to temp directory
+- 🔧 **Enhanced Environment Variables**: Primary support for `DASHSCOPE_API_KEY`, backward compatible with `MODELSCOPE_API_KEY`
+- 🛡️ **Improved Error Handling**: Better error messages and more robust API integration
+- 📁 **Intelligent Path Detection**: Automatic directory creation and fallback mechanisms
+- 🚀 **Better User Experience**: Images now saved directly to user's Desktop by default
 
 ### v1.0.1
 - 🔧 **BREAKING CHANGE**: Updated to use Alibaba Cloud DashScope API instead of ModelScope API

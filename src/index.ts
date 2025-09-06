@@ -56,7 +56,7 @@ class AIPicMCPServer {
     this.server = new Server(
       {
         name: 'aipic-mcp-server',
-        version: '1.0.2',
+        version: '1.0.3',
       },
       {
         capabilities: {
@@ -74,7 +74,7 @@ class AIPicMCPServer {
       tools: [
         {
           name: 'generate_web_image',
-          description: 'Generate AI images for web design using FLUX model via ModelScope/DashScope API. Perfect for creating placeholder images, hero images, product images, and other web assets.',
+          description: 'Generate AI images for web design using FLUX model via DashScope API. Perfect for creating placeholder images, hero images, product images, and other web assets.',
           inputSchema: {
             type: 'object',
             properties: {
@@ -98,7 +98,7 @@ class AIPicMCPServer {
               },
               apiKey: {
                 type: 'string',
-                description: 'ModelScope/DashScope API key for authentication (can also be set via MODELSCOPE_API_KEY environment variable)',
+                description: 'DashScope API key for authentication (can also be set via DASHSCOPE_API_KEY environment variable)',
               },
             },
             required: ['prompt'],
@@ -132,24 +132,15 @@ class AIPicMCPServer {
         throw new Error('Prompt is required and cannot be empty');
       }
 
-      // Get API key from parameter or environment variable
-      const effectiveApiKey = apiKey || process.env.MODELSCOPE_API_KEY;
+      // Get API key from parameter or environment variables (prefer DASHSCOPE_API_KEY, fallback to MODELSCOPE_API_KEY for compatibility)
+      const effectiveApiKey = apiKey || process.env.DASHSCOPE_API_KEY || process.env.MODELSCOPE_API_KEY;
       
       if (!effectiveApiKey || effectiveApiKey.trim().length === 0) {
-        throw new Error('API key is required. Please provide it as a parameter or set MODELSCOPE_API_KEY environment variable.');
+        throw new Error('API key is required. Please provide it as a parameter or set DASHSCOPE_API_KEY environment variable.');
       }
 
-      // Determine API type based on key format and choose appropriate method
-      let imageUrl: string;
-      if (effectiveApiKey.startsWith('sk-')) {
-        // DashScope API key
-        imageUrl = await this.generateImageWithDashScope(prompt, effectiveApiKey, width, height);
-      } else if (effectiveApiKey.startsWith('ms-')) {
-        // ModelScope API key - try ModelScope Studio API
-        imageUrl = await this.generateImageWithModelScopeStudio(prompt, effectiveApiKey, width, height);
-      } else {
-        throw new Error('Invalid API key format. Expected format: sk-xxx (DashScope) or ms-xxx (ModelScope)');
-      }
+      // Generate image using DashScope API
+      const imageUrl = await this.generateImageWithDashScope(prompt, effectiveApiKey, width, height);
       
       // Download and process the image
       const imageBuffer = await this.downloadImage(imageUrl);
@@ -163,23 +154,45 @@ class AIPicMCPServer {
           .toBuffer();
       }
 
-      // Save image
-      const filename = outputPath || `web_image_${uuidv4().slice(0, 8)}.jpg`;
-      const fullPath = join(process.cwd(), filename);
+      // Save image with a more reliable path strategy
+      let finalPath: string;
+      if (outputPath) {
+        finalPath = outputPath;
+      } else {
+        // Try to save to user's Desktop, fallback to temp directory
+        const filename = `web_image_${uuidv4().slice(0, 8)}.jpg`;
+        const possiblePaths = [
+          `/Users/${process.env.USER || 'user'}/Desktop/${filename}`,
+          `/tmp/${filename}`,
+          join(process.cwd(), filename)
+        ];
+        
+        finalPath = possiblePaths[0]; // Default to Desktop
+        
+        // Check if we can write to Desktop, otherwise use temp
+        try {
+          const dir = dirname(finalPath);
+          if (!existsSync(dir)) {
+            finalPath = possiblePaths[1]; // Use /tmp
+          }
+        } catch {
+          finalPath = possiblePaths[1]; // Use /tmp
+        }
+      }
       
       // Ensure directory exists
-      const dir = dirname(fullPath);
+      const dir = dirname(finalPath);
       if (!existsSync(dir)) {
         await mkdir(dir, { recursive: true });
       }
 
-      await writeFile(fullPath, processedImage);
+      await writeFile(finalPath, processedImage);
 
       return {
         content: [
           {
             type: 'text',
-            text: `Successfully generated web design image!\n\nPrompt: ${prompt}\nDimensions: ${width}x${height}px\nSaved to: ${fullPath}\n\nThe image has been optimized for web use and saved as a high-quality JPEG.`
+            text: `Successfully generated web design image!\n\nPrompt: ${prompt}\nDimensions: ${width}x${height}px\nSaved to: ${finalPath}\n\nThe image has been optimized for web use and saved as a high-quality JPEG.`
           } as TextContent,
           {
             type: 'image',
@@ -201,56 +214,6 @@ class AIPicMCPServer {
         ],
         isError: true,
       };
-    }
-  }
-
-  private async generateImageWithModelScopeStudio(prompt: string, apiKey: string, width: number, height: number): Promise<string> {
-    // Try ModelScope Studio API (newer approach)
-    const url = 'https://api-inference.modelscope.cn/v1/models/AI-ModelScope/stable-diffusion-v1-5/pipeline';
-    
-    const payload = {
-      input: {
-        prompt: prompt,
-        negative_prompt: "",
-        num_inference_steps: 20,
-        guidance_scale: 7.5,
-        width: width,
-        height: height
-      }
-    };
-
-    const headers = {
-      'Authorization': `Bearer ${apiKey}`,
-      'Content-Type': 'application/json'
-    };
-
-    try {
-      console.error('Trying ModelScope Studio API...');
-      const response = await axios.post(
-        url, 
-        payload, 
-        { 
-          headers,
-          timeout: 60000
-        }
-      );
-
-      if (response.data?.output?.output_imgs?.[0]) {
-        // Return base64 image directly
-        const base64Image = response.data.output.output_imgs[0];
-        // Convert base64 to blob URL for download
-        const buffer = Buffer.from(base64Image, 'base64');
-        const tempFile = join(process.cwd(), `temp_${Date.now()}.jpg`);
-        await writeFile(tempFile, buffer);
-        return `file://${tempFile}`;
-      }
-      
-      throw new Error('Invalid response from ModelScope Studio API - no image found');
-      
-    } catch (error) {
-      console.error('ModelScope Studio API failed, trying DashScope API...');
-      // If ModelScope Studio fails, try DashScope with the same key
-      return await this.generateImageWithDashScope(prompt, apiKey, width, height);
     }
   }
 
@@ -279,7 +242,7 @@ class AIPicMCPServer {
     };
 
     try {
-      console.error('Trying DashScope API...');
+      console.error('Generating image with DashScope API...');
       // Submit the task
       const response = await axios.post<DashScopeResponse>(
         url, 
@@ -304,7 +267,7 @@ class AIPicMCPServer {
     } catch (error) {
       if (axios.isAxiosError(error)) {
         if (error.response?.status === 401) {
-          throw new Error('Invalid API key. Please check your API key format and permissions.');
+          throw new Error('Invalid API key. Please check your DashScope API key format and permissions.');
         } else if (error.response?.status === 429) {
           throw new Error('Rate limit exceeded. Please try again later.');
         } else if (error.code === 'ECONNABORTED') {
@@ -312,9 +275,9 @@ class AIPicMCPServer {
         } else {
           const errorData = error.response?.data;
           if (errorData?.code && errorData?.message) {
-            throw new Error(`API error: ${errorData.message} (Code: ${errorData.code})`);
+            throw new Error(`DashScope API error: ${errorData.message} (Code: ${errorData.code})`);
           }
-          throw new Error(`API error: ${error.response?.statusText || error.message}`);
+          throw new Error(`DashScope API error: ${error.response?.statusText || error.message}`);
         }
       }
       throw error;
@@ -364,14 +327,6 @@ class AIPicMCPServer {
 
   private async downloadImage(imageUrl: string): Promise<Buffer> {
     try {
-      // Handle file:// URLs (local temp files)
-      if (imageUrl.startsWith('file://')) {
-        const { readFile } = await import('fs/promises');
-        const filePath = imageUrl.replace('file://', '');
-        return await readFile(filePath);
-      }
-
-      // Handle HTTP URLs
       const response = await axios.get(imageUrl, {
         responseType: 'arraybuffer',
         timeout: 30000
@@ -401,7 +356,7 @@ class AIPicMCPServer {
   async run(): Promise<void> {
     const transport = new StdioServerTransport();
     await this.server.connect(transport);
-    console.error('AI Picture MCP Server v1.0.2 running on stdio (Auto-detect ModelScope/DashScope API)');
+    console.error('AI Picture MCP Server v1.0.3 running on stdio (DashScope API)');
   }
 }
 
